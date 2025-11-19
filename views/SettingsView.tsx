@@ -1,0 +1,62 @@
+
+import React from 'react';
+import { useApp } from '../context/AppContext';
+import { TEXTS } from '../constants';
+import { Globe, Moon } from 'lucide-react';
+
+const SettingsView: React.FC = () => {
+  const { language, setLanguage } = useApp();
+  const t = TEXTS[language];
+
+  return (
+    <div className="h-full bg-night-900 p-6">
+      <h1 className="text-2xl font-bold text-white mb-8">{t.settings}</h1>
+
+      <div className="bg-night-800 rounded-xl p-4 border border-white/5 space-y-6">
+        
+        {/* Language Selector */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 text-gray-300">
+            <Globe size={20} />
+            <span>{t.language}</span>
+          </div>
+          <div className="flex bg-night-900 rounded-lg p-1 border border-white/10">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                language === 'en' ? 'bg-dream-200 text-night-900' : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setLanguage('zh')}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                language === 'zh' ? 'bg-dream-200 text-night-900' : 'text-gray-500 hover:text-white'
+              }`}
+            >
+              中文
+            </button>
+          </div>
+        </div>
+
+        {/* Theme (Static for now as App is dark only) */}
+        <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
+           <div className="flex items-center space-x-3 text-gray-300">
+            <Moon size={20} />
+            <span>Theme</span>
+          </div>
+          <span className="text-xs text-gray-500">Dark Mode Only</span>
+        </div>
+
+      </div>
+
+      <div className="mt-12 text-center text-gray-600 text-xs">
+        <p>Dozzi v1.0.0</p>
+        <p>Built with React</p>
+      </div>
+    </div>
+  );
+};
+
+export default SettingsView;
