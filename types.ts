@@ -91,4 +91,5 @@ export interface Translations {
   cancel: string;
   selectCreature: string;
   noCreaturesToShare: string;
+  creatureSize: string;
 }

@@ -5,10 +5,13 @@ import { MOCK_FORUM_POSTS } from '../constants';
 interface AppContextType {
   creatures: Creature[];
   addCreature: (creature: Creature) => void;
+  updateCreatures: (creatures: Creature[]) => void;
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
+  creatureScale: number;
+  setCreatureScale: (scale: number) => void;
   forumPosts: ForumPost[];
   addForumPost: (post: ForumPost) => void;
   toggleReaction: (postId: string, emoji: string) => void;
@@ -20,6 +23,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
   const [creatures, setCreatures] = useState<Creature[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>('brain');
   const [language, setLanguage] = useState<Language>('en');
+  const [creatureScale, setCreatureScale] = useState<number>(1.0);
   const [forumPosts, setForumPosts] = useState<ForumPost[]>(MOCK_FORUM_POSTS);
 
   // Load from local storage on mount (mock persistence)
@@ -32,7 +36,17 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
         console.error("Failed to parse stored creatures");
       }
     }
+    
+    const storedScale = localStorage.getItem('dozzi_creature_scale');
+    if (storedScale) {
+        setCreatureScale(parseFloat(storedScale));
+    }
   }, []);
+
+  const handleSetCreatureScale = (scale: number) => {
+      setCreatureScale(scale);
+      localStorage.setItem('dozzi_creature_scale', scale.toString());
+  };
 
   const addCreature = (creature: Creature) => {
     setCreatures(prev => {
@@ -40,6 +54,11 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       localStorage.setItem('dozzi_creatures', JSON.stringify(updated));
       return updated;
     });
+  };
+
+  const updateCreatures = (updatedCreatures: Creature[]) => {
+    setCreatures(updatedCreatures);
+    localStorage.setItem('dozzi_creatures', JSON.stringify(updatedCreatures));
   };
 
   const addForumPost = (post: ForumPost) => {
@@ -62,10 +81,13 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     <AppContext.Provider value={{ 
       creatures, 
       addCreature, 
+      updateCreatures,
       activeTab, 
       setActiveTab, 
       language, 
       setLanguage,
+      creatureScale,
+      setCreatureScale: handleSetCreatureScale,
       forumPosts,
       addForumPost,
       toggleReaction

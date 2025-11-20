@@ -183,12 +183,36 @@ const drawSmoothShape = (ctx: CanvasRenderingContext2D, points: { x: number, y: 
   ctx.fill();
 };
 
+const drawPixelatedCircle = (ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, color: string) => {
+  const startCol = Math.floor((cx - radius) / MOSAIC_SIZE);
+  const endCol = Math.ceil((cx + radius) / MOSAIC_SIZE);
+  const startRow = Math.floor((cy - radius) / MOSAIC_SIZE);
+  const endRow = Math.ceil((cy + radius) / MOSAIC_SIZE);
+
+  ctx.fillStyle = color;
+
+  for (let r = startRow; r < endRow; r++) {
+    for (let c = startCol; c < endCol; c++) {
+      const x = c * MOSAIC_SIZE;
+      const y = r * MOSAIC_SIZE;
+      const cellCx = x + MOSAIC_SIZE / 2;
+      const cellCy = y + MOSAIC_SIZE / 2;
+      
+      // Check if cell center is inside circle
+      if ((cellCx - cx) ** 2 + (cellCy - cy) ** 2 < radius ** 2) {
+        ctx.fillRect(x, y, MOSAIC_SIZE, MOSAIC_SIZE);
+      }
+    }
+  }
+};
+
 export const drawSlime = (
   ctx: CanvasRenderingContext2D, 
   params: VisualParams, 
   time: number, 
   width: number, 
-  height: number
+  height: number,
+  scale: number = 1
 ) => {
   const centerX = width / 2;
   const centerY = height / 2;
@@ -207,7 +231,7 @@ export const drawSlime = (
     const wobble = 1 + Math.sin(time * 12 + i) * 0.05 * p.weight;
     const angleOffset = Math.sin(time * 3 + i * 0.3) * 0.2 * p.weight;
     
-    const r = p.baseRadius * pulse * wobble;
+    const r = p.baseRadius * pulse * wobble * scale;
     const a = p.originalAngle + angleOffset;
     
     return {
@@ -219,13 +243,13 @@ export const drawSlime = (
   });
 
   // 2. Draw Layers
-  const scalesOffsets = [[1.08, 0], [0.9, params.baseRadius * 0.22], [0.7, (1 - 0.7) * params.baseRadius]];
+  const scalesOffsets = [[1.08, 0], [0.9, params.baseRadius * 0.22 * scale], [0.7, (1 - 0.7) * params.baseRadius * scale]];
   
   scalesOffsets.forEach((conf, i) => {
-    const [scale, offsetY] = conf;
+    const [layerScale, offsetY] = conf;
     const layerPoints = animatedPoints.map(p => ({
-      x: centerX + p.baseX * scale,
-      y: centerY - offsetY + p.baseY * scale
+      x: centerX + p.baseX * layerScale,
+      y: centerY - offsetY + p.baseY * layerScale
     }));
     drawSmoothShape(bufferCtx, layerPoints, colorToString(params.colors[2 - i]));
   });
@@ -247,7 +271,7 @@ export const drawSlime = (
           const wobbleFactor = 1 + Math.sin(time * 7 + i) * 0.03 * weight;
           const angleOffset = Math.sin(time * 2 + i * 0.3) * 0.1 * weight;
 
-          const r = spot.dist * pulseFactor * wobbleFactor;
+          const r = spot.dist * pulseFactor * wobbleFactor * scale;
           const a = spot.angle + angleOffset;
 
           const sx = centerX + Math.cos(a) * r;
@@ -255,7 +279,7 @@ export const drawSlime = (
 
           spotCtx.fillStyle = colorToString(spotColor);
           spotCtx.beginPath();
-          spotCtx.arc(sx, sy, spot.size, 0, Math.PI * 2);
+          spotCtx.arc(sx, sy, spot.size * scale, 0, Math.PI * 2);
           spotCtx.fill();
         });
 
@@ -273,9 +297,9 @@ export const drawSlime = (
   }
 
   // 4. Eyes
-  const eyeDistance = params.baseRadius * 0.25;
-  const eyeY = centerY - params.baseRadius * 0.35;
-  const eyeSize = params.baseRadius * 0.12;
+  const eyeDistance = params.baseRadius * 0.25 * scale;
+  const eyeY = centerY - params.baseRadius * 0.35 * scale;
+  const eyeSize = params.baseRadius * 0.12 * scale;
   const { x: offX, y: offY } = params.eyeOffset;
   const eyeColors = params.eyeColors || { sclera: '#FFFFFF', pupil: '#000000' };
 
@@ -297,8 +321,9 @@ export const drawSlime = (
      bufferCtx.fill();
   };
 
-  drawEye(centerX - eyeDistance + offX, eyeY + offY);
-  drawEye(centerX + eyeDistance + offX, eyeY + offY);
+  drawEye(centerX - eyeDistance + offX * scale, eyeY + offY * scale);
+  drawEye(centerX + eyeDistance + offX * scale, eyeY + offY * scale);
+
 
 
   // 5. Mosaic & Flowers
@@ -407,6 +432,8 @@ export const drawSlime = (
           }
 
           // Smooth movement
+          // Note: flower.x/y are absolute coordinates. If scale changes drastically, they might fly.
+          // We could try to scale them, but for now let's let them interpolate.
           if (!flower.x) { flower.x = bestBlock.x; flower.y = bestBlock.y; }
           else {
               flower.x += (bestBlock.x - flower.x) * 0.1;
@@ -414,19 +441,14 @@ export const drawSlime = (
           }
 
           // Draw flower
-          ctx.fillStyle = colorToString(flower.color);
+          const petalColor = colorToString(flower.color);
           for(let j=0; j<5; j++) {
              const ang = (Math.PI * 2 / 5) * j;
-             const px = flower.x + Math.cos(ang) * flower.size;
-             const py = flower.y + Math.sin(ang) * flower.size;
-             ctx.beginPath();
-             ctx.arc(px, py, flower.size * 0.6, 0, Math.PI*2);
-             ctx.fill();
+             const px = flower.x + Math.cos(ang) * flower.size * scale;
+             const py = flower.y + Math.sin(ang) * flower.size * scale;
+             drawPixelatedCircle(ctx, px, py, flower.size * 0.6 * scale, petalColor);
           }
-          ctx.fillStyle = '#FFFF00';
-          ctx.beginPath();
-          ctx.arc(flower.x, flower.y, flower.size * 0.4, 0, Math.PI*2);
-          ctx.fill();
+          drawPixelatedCircle(ctx, flower.x, flower.y, flower.size * 0.4 * scale, '#FFFF00');
       });
   }
 };

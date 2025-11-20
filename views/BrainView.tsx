@@ -15,7 +15,7 @@ type SimulatedCreature = Creature & {
 };
 
 const BrainView: React.FC = () => {
-  const { creatures, language, addForumPost } = useApp();
+  const { creatures, language, addForumPost, updateCreatures } = useApp();
   const t = TEXTS[language];
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   
@@ -26,6 +26,26 @@ const BrainView: React.FC = () => {
   // Local simulation state
   const [simulatedCreatures, setSimulatedCreatures] = useState<SimulatedCreature[]>([]);
   const requestRef = useRef<number | null>(null);
+  const simulatedCreaturesRef = useRef<SimulatedCreature[]>([]);
+
+  // Keep ref updated for unmount saving
+  useEffect(() => {
+    simulatedCreaturesRef.current = simulatedCreatures;
+  }, [simulatedCreatures]);
+
+  // Save positions on unmount
+  useEffect(() => {
+    return () => {
+      if (simulatedCreaturesRef.current.length > 0) {
+        const updatedCreatures = simulatedCreaturesRef.current.map(sim => {
+          // Strip simulation-only props and keep updated x,y
+          const { vx, vy, isScared, ...creatureData } = sim;
+          return creatureData as Creature;
+        });
+        updateCreatures(updatedCreatures);
+      }
+    };
+  }, []);
 
   // Sync creatures from context to local simulation state, preserving physics state
   useEffect(() => {

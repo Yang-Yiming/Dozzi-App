@@ -2,10 +2,10 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { TEXTS } from '../constants';
-import { Globe, Moon } from 'lucide-react';
+import { Globe, Moon, Sliders } from 'lucide-react';
 
 const SettingsView: React.FC = () => {
-  const { language, setLanguage } = useApp();
+  const { language, setLanguage, creatureScale, setCreatureScale } = useApp();
   const t = TEXTS[language];
 
   return (
@@ -37,6 +37,31 @@ const SettingsView: React.FC = () => {
             >
               中文
             </button>
+          </div>
+        </div>
+
+        {/* Creature Size Slider */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-gray-300">
+            <div className="flex items-center space-x-3">
+              <Sliders size={20} />
+              <span>{t.creatureSize}</span>
+            </div>
+            <span className="text-sm font-mono text-dream-200">{creatureScale.toFixed(1)}x</span>
+          </div>
+          <input
+            type="range"
+            min="0.5"
+            max="2.0"
+            step="0.1"
+            value={creatureScale}
+            onChange={(e) => setCreatureScale(parseFloat(e.target.value))}
+            className="w-full h-2 bg-night-900 rounded-lg appearance-none cursor-pointer accent-dream-200"
+          />
+          <div className="flex justify-between text-xs text-gray-500 px-1">
+            <span>0.5x</span>
+            <span>1.0x</span>
+            <span>2.0x</span>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { Creature } from '../types';
+import { useApp } from '../context/AppContext';
 import { motion } from 'framer-motion';
 import { drawSlime } from '../utils/slimeUtils';
 
@@ -12,6 +13,7 @@ interface CreatureVisualProps {
 }
 
 export const CreatureVisual: React.FC<CreatureVisualProps> = ({ creature, className = '', onClick, isScared = false }) => {
+  const { creatureScale } = useApp();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number | null>(null);
   const timeRef = useRef<number>(Math.random() * 100);
@@ -26,8 +28,10 @@ export const CreatureVisual: React.FC<CreatureVisualProps> = ({ creature, classN
     if (!ctx) return;
 
     // Adjust canvas resolution for crispness
-    const width = 200;
-    const height = 200;
+    // We scale the canvas resolution by creatureScale to maintain pixel density
+    // while the CSS size scales up.
+    const width = 200 * creatureScale;
+    const height = 200 * creatureScale;
     canvas.width = width;
     canvas.height = height;
 
@@ -37,20 +41,23 @@ export const CreatureVisual: React.FC<CreatureVisualProps> = ({ creature, classN
       timeRef.current += speed;
       
       if (creature.visualParams) {
-        drawSlime(ctx, creature.visualParams, timeRef.current, width, height);
+        drawSlime(ctx, creature.visualParams, timeRef.current, width, height, creatureScale);
       } else {
         // Fallback for legacy creatures without visualParams
         ctx.clearRect(0, 0, width, height);
         const cx = width / 2;
         const cy = height / 2;
         
+        // Scale fallback drawing
+        const s = creatureScale;
+
         if (isNightmare) {
            // Old Legacy Nightmare Fallback
            ctx.fillStyle = '#1a1a1a';
            ctx.beginPath();
            for(let i=0; i<12; i++) {
              const a = (i/12) * Math.PI * 2 + timeRef.current;
-             const r = 50 + Math.random() * 10;
+             const r = (50 + Math.random() * 10) * s;
              ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
            }
            ctx.fill();
@@ -58,14 +65,14 @@ export const CreatureVisual: React.FC<CreatureVisualProps> = ({ creature, classN
            // Red eyes
            ctx.fillStyle = '#ff0000';
            ctx.beginPath();
-           ctx.arc(cx - 15, cy - 10, 5, 0, Math.PI*2);
-           ctx.arc(cx + 15, cy - 10, 5, 0, Math.PI*2);
+           ctx.arc(cx - 15 * s, cy - 10 * s, 5 * s, 0, Math.PI*2);
+           ctx.arc(cx + 15 * s, cy - 10 * s, 5 * s, 0, Math.PI*2);
            ctx.fill();
         } else {
            // Fallback circle
            ctx.fillStyle = '#888888';
            ctx.beginPath();
-           ctx.arc(cx, cy, 60, 0, Math.PI*2);
+           ctx.arc(cx, cy, 60 * s, 0, Math.PI*2);
            ctx.fill();
         }
       }
@@ -78,7 +85,7 @@ export const CreatureVisual: React.FC<CreatureVisualProps> = ({ creature, classN
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [creature, isNightmare, isScared]);
+  }, [creature, isNightmare, isScared, creatureScale]);
 
   return (
     <motion.div
@@ -91,8 +98,8 @@ export const CreatureVisual: React.FC<CreatureVisualProps> = ({ creature, classN
         ref={canvasRef}
         className="image-pixelated drop-shadow-lg"
         style={{
-          width: `${100 * creature.size}px`,
-          height: `${100 * creature.size}px`,
+          width: `${100 * creature.size * creatureScale}px`,
+          height: `${100 * creature.size * creatureScale}px`,
         }}
       />
       

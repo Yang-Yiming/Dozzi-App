@@ -40,6 +40,7 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     cancel: 'Cancel',
     selectCreature: 'Select a Creature',
     noCreaturesToShare: 'You have no creatures to share! Go focus.',
+    creatureSize: 'Creature Size',
   },
   zh: {
     brain: '大脑',
@@ -65,6 +66,7 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     cancel: '取消',
     selectCreature: '选择一个生物',
     noCreaturesToShare: '你还没有生物可以分享！去专注吧。',
+    creatureSize: '生物大小',
   }
 };
 
