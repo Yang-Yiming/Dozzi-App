@@ -1,20 +1,15 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Dozzi App
 
-# Run and deploy your AI Studio app
+A concept version for project Dozzi, build with Google AI Studio first, but has changed to independent github repo.
 
-This contains everything you need to run your app locally.
+> [!warning]
+> The App is still in development.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1sxQEItW_Dc_On5-QcGRXy20XcqdQRauG
+## Github Action
 
-## Run Locally
+A action for building APK would be triggered if
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- using workflow_dispatch (manually rerun)
+- create release on Github
+- When the push contains tag [v*]
+   - e.g. `git tag v1.0.0 && git push`
