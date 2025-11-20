@@ -112,6 +112,26 @@ const BrainView: React.FC = () => {
           });
         }
 
+        // Collision Avoidance (All creatures)
+        prevCreatures.forEach(other => {
+          if (other.id === creature.id) return;
+
+          const dx = x - other.x;
+          const dy = y - other.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Dynamic collision radius based on creature sizes
+          // Base size 1.0 ~= 10% screen width roughly
+          const minDistance = (creature.size + other.size) * 6; 
+
+          if (dist < minDistance && dist > 0) {
+             const force = (minDistance - dist) / minDistance;
+             // Push away
+             vx += (dx / dist) * force * 0.05;
+             vy += (dy / dist) * force * 0.05;
+          }
+        });
+
         // Normalize Velocity
         // If scared, we allow higher speed. If not, dampen towards base speed.
         const currentSpeed = Math.sqrt(vx*vx + vy*vy);

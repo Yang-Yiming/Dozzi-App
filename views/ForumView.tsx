@@ -82,23 +82,22 @@ const ForumView: React.FC = () => {
                 </div>
              )}
 
-            {/* Reactions Bar */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {REACTION_EMOJIS.map(emoji => (
-                <button
-                  key={emoji}
-                  onClick={() => toggleReaction(post.id, emoji)}
-                  className="flex items-center space-x-1 bg-white/5 hover:bg-white/10 rounded-full px-3 py-1.5 transition-colors text-sm border border-white/5 text-gray-300"
-                >
-                  <span>{emoji}</span>
-                  <span className="text-xs text-gray-400">{post.reactions[emoji] || 0}</span>
-                </button>
-              ))}
-            </div>
+            {/* Reactions & Share Bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex flex-wrap gap-2">
+                {REACTION_EMOJIS.map(emoji => (
+                  <button
+                    key={emoji}
+                    onClick={() => toggleReaction(post.id, emoji)}
+                    className="flex items-center space-x-1 bg-white/5 hover:bg-white/10 rounded-full px-3 py-1.5 transition-colors text-sm border border-white/5 text-gray-300"
+                  >
+                    <span>{emoji}</span>
+                    <span className="text-xs text-gray-400">{post.reactions[emoji] || 0}</span>
+                  </button>
+                ))}
+              </div>
 
-            {/* Actions */}
-            <div className="flex items-center text-gray-400 px-2 border-t border-white/5 pt-3">
-              <button className="hover:text-white transition-colors">
+              <button className="text-gray-400 hover:text-white transition-colors p-2">
                 <Share2 size={18} />
               </button>
             </div>
