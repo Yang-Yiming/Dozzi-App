@@ -4,7 +4,7 @@ import { SlimePoint, VisualParams } from '../types';
 // --- Constants ---
 const MOSAIC_SIZE = 6; // Slightly smaller than Python's 8 for better detail on web
 const FEATURE_PROBABILITIES = {
-  spots: 0.4,
+  spots: 0,
   rainbowEdge: 0.2,
   flowers: 0.35
 };
@@ -69,13 +69,13 @@ const generateRandomFeatures = (isNightmare: boolean = false): string[] => {
   
   if (isNightmare) {
       // Nightmares mostly get spots (like warts or glowing pores)
-      if (Math.random() < 0.8) features.push('spots');
+      // if (Math.random() < 0) features.push('spots');
       // Rarely rainbow
       if (Math.random() < 0.1) features.push('rainbowEdge');
       return features;
   }
 
-  if (Math.random() < FEATURE_PROBABILITIES.spots) features.push('spots');
+  // if (Math.random() < FEATURE_PROBABILITIES.spots) features.push('spots');
   if (Math.random() < FEATURE_PROBABILITIES.rainbowEdge) features.push('rainbowEdge');
   if (Math.random() < FEATURE_PROBABILITIES.flowers) features.push('flowers');
   return features;
@@ -119,32 +119,35 @@ export const generateVisualParams = (baseRadius: number = 100, providedColor?: [
     } : undefined
   };
 
+  /*
   if (features.includes('spots')) {
-    const count = randomInt(5, 15);
+    const count = randomInt(3, 8);
     const spots = [];
     for (let i = 0; i < count; i++) {
       spots.push({
         angle: Math.PI / 2 + (Math.random() - 0.5) * Math.PI,
         dist: baseRadius * (0.3 + Math.random() * 0.6),
-        size: Math.random() * (baseRadius * 0.18) + baseRadius * 0.08,
+        size: Math.random() * (baseRadius * 0.15) + baseRadius * 0.05,
       });
     }
     
     // Nightmares get contrasting/glowing spots
+    // Make them less random "splatter" and more like glowing sores
     const spotColor: [number, number, number] = isNightmare 
-        ? [randomInt(100, 255), randomInt(100, 255), randomInt(100, 255)] // Bright spots
+        ? [Math.min(255, baseColor[0] + 100), Math.min(255, baseColor[1] + 100), Math.min(255, baseColor[2] + 100)]
         : randomColor();
 
     params.spotParams = { count, spots, spotColor };
   }
+  */
 
   if (features.includes('flowers')) {
-    const count = randomInt(3, 6);
+    const count = randomInt(3, 5);
     const flowers = [];
     for (let i = 0; i < count; i++) {
       flowers.push({
         idealAngle: -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.8,
-        size: Math.random() * (baseRadius * 0.1) + baseRadius * 0.05,
+        size: Math.random() * (baseRadius * 0.1) + baseRadius * 0.12,
         color: randomColor(),
       });
     }
@@ -255,6 +258,8 @@ export const drawSlime = (
   });
 
   // 3. Features: Spots
+  // Spots feature removed
+  /*
   if (params.features.includes('spots') && params.spotParams) {
     const { count, spots, spotColor } = params.spotParams;
     
@@ -295,6 +300,7 @@ export const drawSlime = (
         bufferCtx.drawImage(spotCanvas, 0, 0);
     }
   }
+  */
 
   // 4. Eyes
   const eyeDistance = params.baseRadius * 0.25 * scale;

@@ -230,6 +230,11 @@ const BrainView: React.FC = () => {
 
             {/* Creature Header */}
             <div className="flex flex-col items-center mb-6">
+              {/* Creature Thumbnail */}
+              <div className="mb-4 pointer-events-none transform scale-150">
+                <CreatureVisual creature={selectedCreature} />
+              </div>
+
               <div className="text-3xl mb-2 flex gap-2 flex-wrap justify-center">
                 {selectedCreature.emojis.map((e, i) => (
                   <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 100}ms`}}>{e}</span>

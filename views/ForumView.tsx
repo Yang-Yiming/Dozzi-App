@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TEXTS, REACTION_EMOJIS } from '../constants';
 import { CreatureVisual } from '../components/CreatureVisual';
-import { MessageCircle, Share2, Plus, X } from 'lucide-react';
+import { Share2, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Creature } from '../types';
 
@@ -97,13 +97,7 @@ const ForumView: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between text-gray-400 px-2 border-t border-white/5 pt-3">
-              <div className="flex items-center space-x-6">
-                <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors">
-                  <MessageCircle size={18} />
-                  <span className="text-sm">{post.comments.length}</span>
-                </button>
-              </div>
+            <div className="flex items-center text-gray-400 px-2 border-t border-white/5 pt-3">
               <button className="hover:text-white transition-colors">
                 <Share2 size={18} />
               </button>
