@@ -4,6 +4,7 @@ A concept version for project Dozzi, build with Google AI Studio first, but has 
 
 > [!warning]
 > The App is still in development.
+> The login and forum is toy fake ones.
 
 ## Github Action
 
@@ -13,3 +14,5 @@ A action for building APK would be triggered if
 - create release on Github
 - When the push contains tag [v*]
    - e.g. `git tag v1.0.0 && git push`
+
+Current Version: v0.0.2
