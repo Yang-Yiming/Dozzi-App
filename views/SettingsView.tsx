@@ -2,10 +2,19 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { TEXTS } from '../constants';
-import { Globe, Moon, Sliders } from 'lucide-react';
+import { Globe, Moon, Sliders, Users, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const SettingsView: React.FC = () => {
-  const { language, setLanguage, creatureScale, setCreatureScale } = useApp();
+  const { 
+    language, 
+    setLanguage, 
+    creatureScale, 
+    setCreatureScale,
+    familyThreshold,
+    setFamilyThreshold,
+    mergeFamily,
+    setMergeFamily,
+  } = useApp();
   const t = TEXTS[language];
 
   return (
@@ -72,6 +81,51 @@ const SettingsView: React.FC = () => {
             <span>Theme</span>
           </div>
           <span className="text-xs text-gray-500">Dark Mode Only</span>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-white/10 my-2"></div>
+
+        {/* Family Threshold Slider */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-gray-300">
+            <div className="flex items-center space-x-3">
+              <Users size={20} />
+              <span>{t.familyThreshold}</span>
+            </div>
+            <span className="text-sm font-mono text-dream-200">{familyThreshold.toFixed(2)}</span>
+          </div>
+          <input
+            type="range"
+            min="0.1"
+            max="1.0"
+            step="0.05"
+            value={familyThreshold}
+            onChange={(e) => setFamilyThreshold(parseFloat(e.target.value))}
+            className="w-full h-2 bg-night-900 rounded-lg appearance-none cursor-pointer accent-dream-200"
+          />
+          <div className="flex justify-between text-xs text-gray-500 px-1">
+            <span>0.1 ({language === 'zh' ? '严格' : 'Strict'})</span>
+            <span>0.5</span>
+            <span>1.0 ({language === 'zh' ? '宽松' : 'Loose'})</span>
+          </div>
+        </div>
+
+        {/* Merge Family Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-3 text-gray-300">
+              <Users size={20} />
+              <span>{t.mergeFamily}</span>
+            </div>
+            <span className="text-xs text-gray-500 ml-8 mt-1">{t.mergeFamilyDesc}</span>
+          </div>
+          <button
+            onClick={() => setMergeFamily(!mergeFamily)}
+            className="text-dream-200 hover:text-dream-100 transition-colors"
+          >
+            {mergeFamily ? <ToggleRight size={32} /> : <ToggleLeft size={32} className="text-gray-500" />}
+          </button>
         </div>
 
       </div>

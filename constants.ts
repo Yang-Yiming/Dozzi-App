@@ -54,6 +54,19 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     transforming: 'Transforming...',
     transformSuccess: 'Nightmare transformed into a dream!',
     transformGiveUp: 'Give Up',
+    // Family settings
+    familyThreshold: 'Family Threshold',
+    mergeFamily: 'Merge Family',
+    mergeFamilyDesc: 'Show only representative creatures',
+    familyMembers: 'Family Members',
+    replaceRepresentative: 'Replace Representative',
+    replaceRepresentativeConfirm: 'This creature belongs to an existing family. Would you like to replace the current representative?',
+    currentRepresentative: 'Current Representative',
+    newCreature: 'New Creature',
+    replace: 'Replace',
+    keepBoth: 'Keep Both',
+    viewFamily: 'View Family',
+    backToArchive: 'Back to Archive',
   },
   zh: {
     brain: '大脑',
@@ -93,6 +106,19 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     transforming: '转化中...',
     transformSuccess: '梦魇已转化为梦境！',
     transformGiveUp: '放弃',
+    // Family settings
+    familyThreshold: '家族阈值',
+    mergeFamily: '合并家族',
+    mergeFamilyDesc: '只显示代表生物',
+    familyMembers: '家族成员',
+    replaceRepresentative: '替换代表',
+    replaceRepresentativeConfirm: '这个生物属于一个已存在的家族。是否替换当前代表生物？',
+    currentRepresentative: '当前代表',
+    newCreature: '新生物',
+    replace: '替换',
+    keepBoth: '保留两者',
+    viewFamily: '查看家族',
+    backToArchive: '返回收藏',
   }
 };
 

@@ -50,6 +50,16 @@ export interface Creature {
   interpretation?: string; // Dream interpretation
   isArchived?: boolean; // Whether creature is archived
   archivedAt?: number; // Timestamp when archived
+  familyId?: string; // Family ID if this creature belongs to a family
+  isRepresentative?: boolean; // Whether this creature is the representative of its family
+}
+
+// Family grouping for similar creatures
+export interface Family {
+  id: string;
+  representativeId: string; // ID of the representative creature
+  memberIds: string[]; // IDs of all creatures in this family (including representative)
+  createdAt: number;
 }
 
 export interface ForumPost {
@@ -107,4 +117,17 @@ export interface Translations {
   transforming: string;
   transformSuccess: string;
   transformGiveUp: string;
+  // Family settings
+  familyThreshold: string;
+  mergeFamily: string;
+  mergeFamilyDesc: string;
+  familyMembers: string;
+  replaceRepresentative: string;
+  replaceRepresentativeConfirm: string;
+  currentRepresentative: string;
+  newCreature: string;
+  replace: string;
+  keepBoth: string;
+  viewFamily: string;
+  backToArchive: string;
 }
