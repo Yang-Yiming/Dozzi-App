@@ -50,6 +50,10 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     willDissolveIn: 'Will dissolve in',
     dissolving: 'Dissolving...',
     removeFromArchive: 'Remove from Archive',
+    transformNightmare: 'Transform (25 min focus)',
+    transforming: 'Transforming...',
+    transformSuccess: 'Nightmare transformed into a dream!',
+    transformGiveUp: 'Give Up',
   },
   zh: {
     brain: '大脑',
@@ -85,6 +89,10 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     willDissolveIn: '将于',
     dissolving: '消解中...',
     removeFromArchive: '取消收藏',
+    transformNightmare: '转化 (专注25分钟)',
+    transforming: '转化中...',
+    transformSuccess: '梦魇已转化为梦境！',
+    transformGiveUp: '放弃',
   }
 };
 

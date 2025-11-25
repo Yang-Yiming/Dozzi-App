@@ -103,4 +103,8 @@ export interface Translations {
   willDissolveIn: string;
   dissolving: string;
   removeFromArchive: string;
+  transformNightmare: string;
+  transforming: string;
+  transformSuccess: string;
+  transformGiveUp: string;
 }

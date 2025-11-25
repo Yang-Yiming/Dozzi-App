@@ -2,10 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { CreatureVisual } from '../components/CreatureVisual';
-import { TEXTS } from '../constants';
+import { TEXTS, EMOJIS } from '../constants';
 import { Creature } from '../types';
-import { X, Archive, Sparkles, Clock } from 'lucide-react';
+import { X, Archive, Sparkles, Clock, Play, Square, Wand2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateVisualParams } from '../utils/slimeUtils';
 
 // Extended type for simulation state
 type SimulatedCreature = Creature & { 
@@ -15,7 +16,7 @@ type SimulatedCreature = Creature & {
 };
 
 const BrainView: React.FC = () => {
-  const { creatures, language, addForumPost, updateCreatures, archiveCreature, dissolveCreature, getTimeUntilDissolve, isCreatureArchived } = useApp();
+  const { creatures, language, addForumPost, updateCreatures, archiveCreature, dissolveCreature, getTimeUntilDissolve, isCreatureArchived, transformNightmare } = useApp();
   const t = TEXTS[language];
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   
@@ -29,6 +30,14 @@ const BrainView: React.FC = () => {
   
   // Time remaining display
   const [timeRemaining, setTimeRemaining] = useState<string>('');
+  
+  // Transform focus state
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [transformTimeLeft, setTransformTimeLeft] = useState(25 * 60); // 25 minutes
+  const [transformProgress, setTransformProgress] = useState(0);
+  const [collectedEmojis, setCollectedEmojis] = useState<string[]>([]);
+  const transformIntervalRef = useRef<number | null>(null);
+  const hasTransformEndedRef = useRef(false);
   
   // Local simulation state
   const [simulatedCreatures, setSimulatedCreatures] = useState<SimulatedCreature[]>([]);
@@ -186,7 +195,107 @@ const BrainView: React.FC = () => {
     setShareCaption('');
     setShowDissolveConfirm(false);
     setIsDissolvingAnim(false);
+    setIsTransforming(false);
+    setTransformTimeLeft(25 * 60);
+    setTransformProgress(0);
+    setCollectedEmojis([]);
   };
+
+  // Format time helper
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Start transform focus
+  const startTransformFocus = () => {
+    if (!selectedCreature || selectedCreature.type !== 'nightmare') return;
+    hasTransformEndedRef.current = false;
+    setIsTransforming(true);
+    setTransformTimeLeft(25 * 60);
+    setTransformProgress(0);
+    setCollectedEmojis([]);
+  };
+
+  // Give up transform
+  const giveUpTransform = () => {
+    if (!isTransforming) return;
+    endTransform(false);
+  };
+
+  // End transform focus
+  const endTransform = (success: boolean) => {
+    if (hasTransformEndedRef.current) return;
+    hasTransformEndedRef.current = true;
+    
+    if (transformIntervalRef.current) {
+      window.clearInterval(transformIntervalRef.current);
+      transformIntervalRef.current = null;
+    }
+    
+    setIsTransforming(false);
+    
+    if (success && selectedCreature) {
+      // Transform the nightmare into a dream with new visual params
+      const newVisualParams = generateVisualParams(60, undefined, false);
+      
+      // Update the creature in state
+      const updatedCreatures = creatures.map(c => {
+        if (c.id === selectedCreature.id) {
+          return {
+            ...c,
+            type: 'dream' as const,
+            createdAt: Date.now(),
+            visualParams: newVisualParams,
+            emojis: collectedEmojis.length > 0 ? collectedEmojis : ['✨', '🌈'],
+          };
+        }
+        return c;
+      });
+      updateCreatures(updatedCreatures);
+      
+      // Update selectedCreature to show the transformed version
+      setSelectedCreature({
+        ...selectedCreature,
+        type: 'dream',
+        createdAt: Date.now(),
+        visualParams: newVisualParams,
+        emojis: collectedEmojis.length > 0 ? collectedEmojis : ['✨', '🌈'],
+      });
+    }
+    
+    setTransformProgress(0);
+    setTransformTimeLeft(25 * 60);
+  };
+
+  // Transform timer effect
+  useEffect(() => {
+    if (isTransforming) {
+      transformIntervalRef.current = window.setInterval(() => {
+        setTransformTimeLeft((prev) => {
+          if (prev <= 1) {
+            endTransform(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+        
+        // Update progress (0 to 1)
+        setTransformProgress(prev => Math.min(prev + (1 / (25 * 60)), 1));
+        
+        // Randomly add emojis (dream fragments)
+        if (Math.random() < 0.05) {
+          const randomEmoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+          setCollectedEmojis(prev => [...prev.slice(-4), randomEmoji]);
+        }
+      }, 1000);
+    }
+    
+    return () => {
+      if (transformIntervalRef.current) window.clearInterval(transformIntervalRef.current);
+    };
+  }, [isTransforming]);
 
   // Update time remaining display
   useEffect(() => {
@@ -360,8 +469,67 @@ const BrainView: React.FC = () => {
                   </button>
                 </div>
               </motion.div>
+            ) : isTransforming ? (
+              /* Transform Focus Mode */
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-4"
+              >
+                {/* Progress bar */}
+                <div className="w-full h-2 bg-night-900/50 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-dream-200"
+                    style={{ width: `${transformProgress * 100}%` }}
+                  />
+                </div>
+                
+                {/* Timer */}
+                <div className="text-center">
+                  <div className="text-3xl font-mono font-bold text-white mb-2">
+                    {formatTime(transformTimeLeft)}
+                  </div>
+                  <p className="text-sm text-gray-400">{t.transforming}</p>
+                </div>
+                
+                {/* Collected emojis */}
+                {collectedEmojis.length > 0 && (
+                  <div className="flex justify-center gap-2 flex-wrap">
+                    {collectedEmojis.map((e, i) => (
+                      <motion.span 
+                        key={i} 
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="text-xl"
+                      >
+                        {e}
+                      </motion.span>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Give up button */}
+                <button 
+                  onClick={giveUpTransform}
+                  className="w-full flex items-center justify-center gap-2 border border-red-500/50 text-red-400 hover:bg-red-500/10 py-2.5 rounded-xl text-sm transition-colors"
+                >
+                  <Square size={14} fill="currentColor" />
+                  {t.transformGiveUp}
+                </button>
+              </motion.div>
             ) : !isSharing ? (
               <div className="space-y-2">
+                {/* Transform Button (only for nightmares) */}
+                {selectedCreature.type === 'nightmare' && (
+                  <button 
+                    onClick={startTransformFocus}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-3 rounded-xl text-sm font-medium transition-all"
+                  >
+                    <Wand2 size={16} />
+                    {t.transformNightmare}
+                  </button>
+                )}
+                
                 {/* Archive Button */}
                 {isCreatureArchived(selectedCreature.id) ? (
                   <div className="w-full flex items-center justify-center gap-2 bg-amber-600/30 text-amber-300 py-3 rounded-xl text-sm font-medium">
@@ -392,14 +560,21 @@ const BrainView: React.FC = () => {
                   </div>
                 )}
                 
-                {/* Dissolve Button */}
-                <button 
-                  onClick={() => setShowDissolveConfirm(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-red-900/30 text-gray-400 hover:text-red-300 py-2.5 rounded-xl text-sm transition-colors"
-                >
-                  <Sparkles size={14} />
-                  {t.dissolve}
-                </button>
+                {/* Dissolve Button - only for dreams, nightmares cannot be dissolved */}
+                {selectedCreature.type === 'dream' ? (
+                  <button 
+                    onClick={() => setShowDissolveConfirm(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-red-900/30 text-gray-400 hover:text-red-300 py-2.5 rounded-xl text-sm transition-colors"
+                  >
+                    <Sparkles size={14} />
+                    {t.dissolve}
+                  </button>
+                ) : (
+                  <div className="w-full flex items-center justify-center gap-2 bg-white/5 text-gray-500 py-2.5 rounded-xl text-sm cursor-not-allowed">
+                    <Sparkles size={14} />
+                    {language === 'zh' ? '梦魇无法消解' : 'Nightmares cannot be dissolved'}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
