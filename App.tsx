@@ -4,6 +4,7 @@ import BottomNav from './components/BottomNav';
 import BrainView from './views/BrainView';
 import FocusView from './views/FocusView';
 import ForumView from './views/ForumView';
+import ArchiveView from './views/ArchiveView';
 import SettingsView from './views/SettingsView';
 
 const MainContent: React.FC = () => {
@@ -15,6 +16,8 @@ const MainContent: React.FC = () => {
         return <BrainView />;
       case 'focus':
         return <FocusView />;
+      case 'archive':
+        return <ArchiveView />;
       case 'forum':
         return <ForumView />;
       case 'settings':

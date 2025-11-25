@@ -1,5 +1,5 @@
 
-export type Tab = 'brain' | 'focus' | 'forum' | 'settings';
+export type Tab = 'brain' | 'focus' | 'forum' | 'archive' | 'settings';
 
 export type Language = 'en' | 'zh';
 
@@ -48,6 +48,8 @@ export interface Creature {
   y: number; // Position percentage 0-100
   name?: string; // Optional name
   interpretation?: string; // Dream interpretation
+  isArchived?: boolean; // Whether creature is archived
+  archivedAt?: number; // Timestamp when archived
 }
 
 export interface ForumPost {
@@ -71,6 +73,7 @@ export interface Translations {
   brain: string;
   focus: string;
   forum: string;
+  archive: string;
   settings: string;
   startFocus: string;
   giveUp: string;
@@ -92,4 +95,12 @@ export interface Translations {
   selectCreature: string;
   noCreaturesToShare: string;
   creatureSize: string;
+  addToArchive: string;
+  dissolve: string;
+  dissolveConfirm: string;
+  noArchivedCreatures: string;
+  archivedOn: string;
+  willDissolveIn: string;
+  dissolving: string;
+  removeFromArchive: string;
 }

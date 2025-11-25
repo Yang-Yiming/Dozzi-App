@@ -1,5 +1,5 @@
 import React from 'react';
-import { Brain, Timer, Users, Settings } from 'lucide-react';
+import { Brain, Timer, Users, Settings, Archive } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { TEXTS } from '../constants';
 
@@ -8,6 +8,7 @@ const BottomNav: React.FC = () => {
   const t = TEXTS[language];
 
   const navItems = [
+    { id: 'archive', icon: Archive, label: t.archive },
     { id: 'brain', icon: Brain, label: t.brain },
     { id: 'focus', icon: Timer, label: t.focus },
     { id: 'forum', icon: Users, label: t.forum },

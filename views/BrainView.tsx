@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { CreatureVisual } from '../components/CreatureVisual';
 import { TEXTS } from '../constants';
 import { Creature } from '../types';
-import { X } from 'lucide-react';
+import { X, Archive, Sparkles, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Extended type for simulation state
@@ -15,13 +15,20 @@ type SimulatedCreature = Creature & {
 };
 
 const BrainView: React.FC = () => {
-  const { creatures, language, addForumPost, updateCreatures } = useApp();
+  const { creatures, language, addForumPost, updateCreatures, archiveCreature, dissolveCreature, getTimeUntilDissolve, isCreatureArchived } = useApp();
   const t = TEXTS[language];
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   
   // Sharing State
   const [isSharing, setIsSharing] = useState(false);
   const [shareCaption, setShareCaption] = useState('');
+  
+  // Dissolve confirmation state
+  const [showDissolveConfirm, setShowDissolveConfirm] = useState(false);
+  const [isDissolvingAnim, setIsDissolvingAnim] = useState(false);
+  
+  // Time remaining display
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
   
   // Local simulation state
   const [simulatedCreatures, setSimulatedCreatures] = useState<SimulatedCreature[]>([]);
@@ -177,6 +184,53 @@ const BrainView: React.FC = () => {
     setSelectedCreature(c);
     setIsSharing(false);
     setShareCaption('');
+    setShowDissolveConfirm(false);
+    setIsDissolvingAnim(false);
+  };
+
+  // Update time remaining display
+  useEffect(() => {
+    if (!selectedCreature) return;
+    
+    const updateTime = () => {
+      const remaining = getTimeUntilDissolve(selectedCreature);
+      if (remaining === Infinity) {
+        setTimeRemaining('');
+        return;
+      }
+      
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (hours > 0) {
+        setTimeRemaining(`${hours}h ${minutes}m`);
+      } else {
+        setTimeRemaining(`${minutes}m`);
+      }
+    };
+    
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, [selectedCreature, getTimeUntilDissolve]);
+
+  const handleArchive = () => {
+    if (!selectedCreature) return;
+    archiveCreature(selectedCreature.id);
+    // Don't close modal, just show feedback that it's archived
+  };
+
+  const handleDissolve = () => {
+    if (!selectedCreature) return;
+    setIsDissolvingAnim(true);
+    
+    // Play dissolve animation then remove
+    setTimeout(() => {
+      dissolveCreature(selectedCreature.id);
+      setSelectedCreature(null);
+      setShowDissolveConfirm(false);
+      setIsDissolvingAnim(false);
+    }, 800);
   };
 
   const handleShare = () => {
@@ -249,25 +303,82 @@ const BrainView: React.FC = () => {
             </button>
 
             {/* Creature Header */}
-            <div className="flex flex-col items-center mb-6">
-              {/* Creature Thumbnail */}
-              <div className="mb-4 pointer-events-none transform scale-150">
+            <div className="flex flex-col items-center mb-4">
+              {/* Creature Thumbnail with dissolve animation */}
+              <motion.div 
+                className="mb-4 pointer-events-none transform scale-150"
+                animate={isDissolvingAnim ? { 
+                  opacity: [1, 0],
+                  scale: [1.5, 0.5],
+                  filter: ['blur(0px)', 'blur(10px)']
+                } : {}}
+                transition={{ duration: 0.8 }}
+              >
                 <CreatureVisual creature={selectedCreature} />
-              </div>
+              </motion.div>
 
               <div className="text-3xl mb-2 flex gap-2 flex-wrap justify-center">
                 {selectedCreature.emojis.map((e, i) => (
                   <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 100}ms`}}>{e}</span>
                 ))}
               </div>
-              <span className={`text-xs px-2 py-1 rounded-full ${selectedCreature.type === 'nightmare' ? 'bg-red-900/50 text-red-200' : 'bg-dream-200/20 text-dream-200'}`}>
+              
+              <span className={`text-xs px-2 py-1 rounded-full mb-2 ${selectedCreature.type === 'nightmare' ? 'bg-red-900/50 text-red-200' : 'bg-dream-200/20 text-dream-200'}`}>
                 {selectedCreature.type === 'nightmare' ? t.nightmareDesc : t.dreamDesc}
               </span>
+              
+              {/* Time remaining indicator */}
+              {timeRemaining && !selectedCreature.isArchived && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-300/80">
+                  <Clock size={12} />
+                  <span>{t.willDissolveIn} {timeRemaining}</span>
+                </div>
+              )}
             </div>
 
-            {/* Main Content or Share Form */}
-            {!isSharing ? (
-              <div className="flex gap-2">
+            {/* Dissolve Confirmation */}
+            {showDissolveConfirm ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-3"
+              >
+                <p className="text-center text-gray-300 text-sm">{t.dissolveConfirm}</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setShowDissolveConfirm(false)}
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 py-2.5 rounded-xl text-sm transition-colors"
+                  >
+                    {t.cancel}
+                  </button>
+                  <button 
+                    onClick={handleDissolve}
+                    disabled={isDissolvingAnim}
+                    className="flex-1 bg-red-600/80 hover:bg-red-500 text-white py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50"
+                  >
+                    {isDissolvingAnim ? t.dissolving : t.dissolve}
+                  </button>
+                </div>
+              </motion.div>
+            ) : !isSharing ? (
+              <div className="space-y-2">
+                {/* Archive Button */}
+                {isCreatureArchived(selectedCreature.id) ? (
+                  <div className="w-full flex items-center justify-center gap-2 bg-amber-600/30 text-amber-300 py-3 rounded-xl text-sm font-medium">
+                    <Archive size={16} />
+                    {language === 'zh' ? '已收藏' : 'Archived'}
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleArchive}
+                    className="w-full flex items-center justify-center gap-2 bg-amber-600/80 hover:bg-amber-500 text-white py-3 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    <Archive size={16} />
+                    {t.addToArchive}
+                  </button>
+                )}
+                
+                {/* Share Button (only for dreams) */}
                 {selectedCreature.type === 'dream' ? (
                   <button 
                     onClick={() => setIsSharing(true)}
@@ -280,6 +391,15 @@ const BrainView: React.FC = () => {
                      Nightmares cannot be shared
                   </div>
                 )}
+                
+                {/* Dissolve Button */}
+                <button 
+                  onClick={() => setShowDissolveConfirm(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-red-900/30 text-gray-400 hover:text-red-300 py-2.5 rounded-xl text-sm transition-colors"
+                >
+                  <Sparkles size={14} />
+                  {t.dissolve}
+                </button>
               </div>
             ) : (
               <div className="space-y-4">

@@ -21,6 +21,7 @@ const FocusView: React.FC = () => {
   const [showResult, setShowResult] = useState<'success' | 'fail' | null>(null);
 
   const intervalRef = useRef<number | null>(null);
+  const hasEndedRef = useRef(false); // Prevent double-ending
 
   // Helper to format time
   const formatTime = (seconds: number) => {
@@ -34,6 +35,7 @@ const FocusView: React.FC = () => {
     // Update state so endFocus uses the correct duration for size calculation
     if (minsOverride) setDurationMinutes(minsOverride);
     
+    hasEndedRef.current = false; // Reset the guard
     setIsFocusing(true);
     setTimeLeft(Math.floor(mins * 60));
     setCollectedEmojis([]);
@@ -48,6 +50,10 @@ const FocusView: React.FC = () => {
   };
 
   const endFocus = (success: boolean) => {
+    // Guard against double-ending
+    if (hasEndedRef.current) return;
+    hasEndedRef.current = true;
+    
     if (intervalRef.current) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
