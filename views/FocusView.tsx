@@ -193,7 +193,7 @@ const FocusView: React.FC = () => {
             <label className="block text-center text-gray-400 text-sm mb-2">{t.minutes}: {Math.floor(durationMinutes)}</label>
             <input 
               type="range" 
-              min="5" 
+              min="20" 
               max="120" 
               step="5"
               value={Math.floor(durationMinutes)} 

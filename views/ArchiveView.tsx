@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { CreatureVisual } from '../components/CreatureVisual';
 import { TEXTS } from '../constants';
 import { Creature, Family } from '../types';
-import { X, Trash2, Archive, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Trash2, Archive, Users, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ArchiveView: React.FC = () => {
@@ -19,11 +19,15 @@ const ArchiveView: React.FC = () => {
     confirmArchiveReplace,
     confirmArchiveKeepBoth,
     cancelPendingArchive,
+    addForumPost,
+    user,
   } = useApp();
   const t = TEXTS[language];
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [viewingFamily, setViewingFamily] = useState<Family | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareCaption, setShareCaption] = useState('');
 
   // Get creatures to display based on merge family setting
   const displayCreatures = useMemo(() => {
@@ -71,6 +75,28 @@ const ArchiveView: React.FC = () => {
     removeFromArchive(selectedCreature.id);
     setSelectedCreature(null);
     setShowRemoveConfirm(false);
+  };
+
+  const handleShareToForum = () => {
+    if (!selectedCreature) return;
+    
+    const authorName = user?.username || 'You';
+    
+    addForumPost({
+      id: Math.random().toString(36).substr(2, 9),
+      author: authorName,
+      creature: selectedCreature,
+      caption: shareCaption,
+      likes: 0,
+      reactions: {},
+      comments: [],
+      timestamp: Date.now(),
+    });
+    
+    // Reset and close modals
+    setShowShareModal(false);
+    setShareCaption('');
+    setSelectedCreature(null);
   };
 
   const formatDate = (timestamp: number) => {
@@ -145,11 +171,13 @@ const ArchiveView: React.FC = () => {
                   <div className="mb-2 transform scale-75">
                     <CreatureVisual creature={creature} />
                   </div>
-                  <div className="text-lg flex gap-1 flex-wrap justify-center mb-1">
-                    {creature.emojis.slice(0, 3).map((e, i) => (
-                      <span key={i}>{e}</span>
-                    ))}
-                  </div>
+                  {creature.type !== 'nightmare' && (
+                    <div className="text-lg flex gap-1 flex-wrap justify-center mb-1">
+                      {creature.emojis.slice(0, 3).map((e, i) => (
+                        <span key={i}>{e}</span>
+                      ))}
+                    </div>
+                  )}
                   {creature.archivedAt && (
                     <span className="text-[10px] text-amber-300/50">
                       {formatDate(creature.archivedAt)}
@@ -197,11 +225,13 @@ const ArchiveView: React.FC = () => {
                     <div className="mb-2 transform scale-75">
                       <CreatureVisual creature={creature} />
                     </div>
-                    <div className="text-lg flex gap-1 flex-wrap justify-center mb-1">
-                      {creature.emojis.slice(0, 3).map((e, i) => (
-                        <span key={i}>{e}</span>
-                      ))}
-                    </div>
+                    {creature.type !== 'nightmare' && (
+                      <div className="text-lg flex gap-1 flex-wrap justify-center mb-1">
+                        {creature.emojis.slice(0, 3).map((e, i) => (
+                          <span key={i}>{e}</span>
+                        ))}
+                      </div>
+                    )}
                     {creature.archivedAt && (
                       <span className="text-[10px] text-amber-300/50">
                         {formatDate(creature.archivedAt)}
@@ -237,11 +267,13 @@ const ArchiveView: React.FC = () => {
                 <CreatureVisual creature={selectedCreature} />
               </div>
 
-              <div className="text-3xl mb-2 flex gap-2 flex-wrap justify-center">
-                {selectedCreature.emojis.map((e, i) => (
-                  <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 100}ms`}}>{e}</span>
-                ))}
-              </div>
+              {selectedCreature.type !== 'nightmare' && (
+                <div className="text-3xl mb-2 flex gap-2 flex-wrap justify-center">
+                  {selectedCreature.emojis.map((e, i) => (
+                    <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 100}ms`}}>{e}</span>
+                  ))}
+                </div>
+              )}
               
               <span className={`text-xs px-2 py-1 rounded-full mb-2 ${selectedCreature.type === 'nightmare' ? 'bg-red-900/50 text-red-200' : 'bg-dream-200/20 text-dream-200'}`}>
                 {selectedCreature.type === 'nightmare' ? t.nightmareDesc : t.dreamDesc}
@@ -288,6 +320,16 @@ const ArchiveView: React.FC = () => {
               </motion.div>
             ) : (
               <div className="space-y-2">
+                {/* Share to Forum Button - only for dreams */}
+                {selectedCreature.type === 'dream' && (
+                  <button 
+                    onClick={() => setShowShareModal(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-dream-200/20 hover:bg-dream-200/30 text-dream-200 py-2.5 rounded-xl text-sm transition-colors"
+                  >
+                    <Share2 size={14} />
+                    {t.share}
+                  </button>
+                )}
                 {/* Remove from Archive Button */}
                 <button 
                   onClick={() => setShowRemoveConfirm(true)}
@@ -298,6 +340,79 @@ const ArchiveView: React.FC = () => {
                 </button>
               </div>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Share Modal */}
+      <AnimatePresence>
+        {showShareModal && selectedCreature && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-night-800 border border-amber-500/20 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-white">{t.share}</h3>
+                <button 
+                  onClick={() => {
+                    setShowShareModal(false);
+                    setShareCaption('');
+                  }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {/* Preview */}
+              <div className="bg-night-900/50 rounded-xl p-4 flex flex-col items-center mb-4">
+                <div className="transform scale-75 mb-2">
+                  <CreatureVisual creature={selectedCreature} />
+                </div>
+                {selectedCreature.type !== 'nightmare' && (
+                  <div className="text-lg flex gap-1">
+                    {selectedCreature.emojis.slice(0, 3).map((e, i) => (
+                      <span key={i}>{e}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Caption Input */}
+              <textarea
+                className="w-full bg-night-900 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-dream-200 min-h-[80px] mb-4"
+                placeholder={t.writeCaption}
+                value={shareCaption}
+                onChange={(e) => setShareCaption(e.target.value)}
+              />
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowShareModal(false);
+                    setShareCaption('');
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-gray-400 font-medium hover:bg-white/5"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={handleShareToForum}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-night-900 bg-dream-200 hover:bg-white transition-colors"
+                >
+                  {t.post}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -334,11 +449,13 @@ const ArchiveView: React.FC = () => {
                       <CreatureVisual creature={pendingArchive.existingRepresentative} />
                     )}
                   </div>
-                  <div className="text-sm flex gap-1 mt-2">
-                    {pendingArchive.existingRepresentative?.emojis.slice(0, 2).map((e, i) => (
-                      <span key={i}>{e}</span>
-                    ))}
-                  </div>
+                  {pendingArchive.existingRepresentative?.type !== 'nightmare' && (
+                    <div className="text-sm flex gap-1 mt-2">
+                      {pendingArchive.existingRepresentative?.emojis.slice(0, 2).map((e, i) => (
+                        <span key={i}>{e}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Arrow */}
@@ -350,11 +467,13 @@ const ArchiveView: React.FC = () => {
                   <div className="transform scale-75">
                     <CreatureVisual creature={pendingArchive.creature} />
                   </div>
-                  <div className="text-sm flex gap-1 mt-2">
-                    {pendingArchive.creature.emojis.slice(0, 2).map((e, i) => (
-                      <span key={i}>{e}</span>
-                    ))}
-                  </div>
+                  {pendingArchive.creature.type !== 'nightmare' && (
+                    <div className="text-sm flex gap-1 mt-2">
+                      {pendingArchive.creature.emojis.slice(0, 2).map((e, i) => (
+                        <span key={i}>{e}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               

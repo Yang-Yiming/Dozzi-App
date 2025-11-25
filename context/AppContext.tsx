@@ -261,6 +261,9 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     const creature = creatures.find(c => c.id === creatureId);
     if (!creature) return;
     
+    // Nightmares cannot be archived
+    if (creature.type === 'nightmare') return;
+    
     // Check if already archived to prevent duplicates
     if (archivedCreatures.some(c => c.id === creatureId)) return;
     
@@ -453,7 +456,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     return archivedCreatures.some(c => c.id === creatureId);
   }, [archivedCreatures]);
 
-  // Dissolve a creature - permanently removes it
+  // Dissolve a creature - permanently removes it from the brain (does NOT remove from archive)
   const dissolveCreature = useCallback((creatureId: string) => {
     // Check active creatures first
     setCreatures(prev => {
@@ -463,15 +466,8 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       }
       return updated;
     });
-    
-    // Also check archived creatures
-    setArchivedCreatures(prev => {
-      const updated = prev.filter(c => c.id !== creatureId);
-      if (updated.length !== prev.length) {
-        localStorage.setItem('dozzi_archived_creatures', JSON.stringify(updated));
-      }
-      return updated;
-    });
+    // Note: Do not remove archived copies here. Archive (favorites) are independent of brain
+    // creatures - dissolving a creature in the brain should not delete it from the archive.
   }, []);
 
   // Get time remaining until creature dissolves (in ms)
