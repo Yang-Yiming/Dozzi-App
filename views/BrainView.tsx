@@ -66,7 +66,7 @@ const BrainView: React.FC = () => {
   // Sync creatures from context to local simulation state, preserving physics state
   useEffect(() => {
     setSimulatedCreatures(prev => {
-      const prevMap = new Map(prev.map(c => [c.id, c]));
+      const prevMap = new Map<string, SimulatedCreature>(prev.map(c => [c.id, c]));
       
       return creatures.map(c => {
         const existing = prevMap.get(c.id);
@@ -426,11 +426,13 @@ const BrainView: React.FC = () => {
                 <CreatureVisual creature={selectedCreature} />
               </motion.div>
 
-              <div className="text-3xl mb-2 flex gap-2 flex-wrap justify-center">
-                {selectedCreature.emojis.map((e, i) => (
-                  <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 100}ms`}}>{e}</span>
-                ))}
-              </div>
+              {selectedCreature.type !== 'nightmare' && (
+                <div className="text-3xl mb-2 flex gap-2 flex-wrap justify-center">
+                  {selectedCreature.emojis.map((e, i) => (
+                    <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 100}ms`}}>{e}</span>
+                  ))}
+                </div>
+              )}
               
               <span className={`text-xs px-2 py-1 rounded-full mb-2 ${selectedCreature.type === 'nightmare' ? 'bg-red-900/50 text-red-200' : 'bg-dream-200/20 text-dream-200'}`}>
                 {selectedCreature.type === 'nightmare' ? t.nightmareDesc : t.dreamDesc}
@@ -530,38 +532,36 @@ const BrainView: React.FC = () => {
                   </button>
                 )}
                 
-                {/* Archive Button */}
-                {isCreatureArchived(selectedCreature.id) ? (
-                  <div className="w-full flex items-center justify-center gap-2 bg-amber-600/30 text-amber-300 py-3 rounded-xl text-sm font-medium">
-                    <Archive size={16} />
-                    {language === 'zh' ? '已收藏' : 'Archived'}
-                  </div>
-                ) : (
-                  <button 
-                    onClick={handleArchive}
-                    className="w-full flex items-center justify-center gap-2 bg-amber-600/80 hover:bg-amber-500 text-white py-3 rounded-xl text-sm font-medium transition-colors"
-                  >
-                    <Archive size={16} />
-                    {t.addToArchive}
-                  </button>
+                {/* Archive Button - only for dreams, nightmares cannot be archived */}
+                {selectedCreature.type === 'dream' && (
+                  isCreatureArchived(selectedCreature.id) ? (
+                    <div className="w-full flex items-center justify-center gap-2 bg-amber-600/30 text-amber-300 py-3 rounded-xl text-sm font-medium">
+                      <Archive size={16} />
+                      {language === 'zh' ? '已收藏' : 'Archived'}
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleArchive}
+                      className="w-full flex items-center justify-center gap-2 bg-amber-600/80 hover:bg-amber-500 text-white py-3 rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <Archive size={16} />
+                      {t.addToArchive}
+                    </button>
+                  )
                 )}
                 
-                {/* Share Button (only for dreams) */}
-                {selectedCreature.type === 'dream' ? (
+                {/* Share Button - only for dreams */}
+                {selectedCreature.type === 'dream' && (
                   <button 
                     onClick={() => setIsSharing(true)}
                     className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl text-sm font-medium transition-colors"
                   >
                     {t.share}
                   </button>
-                ) : (
-                  <div className="w-full bg-white/5 text-gray-500 py-3 rounded-xl text-sm font-medium text-center cursor-not-allowed">
-                     Nightmares cannot be shared
-                  </div>
                 )}
                 
-                {/* Dissolve Button - only for dreams, nightmares cannot be dissolved */}
-                {selectedCreature.type === 'dream' ? (
+                {/* Dissolve Button - only for dreams */}
+                {selectedCreature.type === 'dream' && (
                   <button 
                     onClick={() => setShowDissolveConfirm(true)}
                     className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-red-900/30 text-gray-400 hover:text-red-300 py-2.5 rounded-xl text-sm transition-colors"
@@ -569,11 +569,6 @@ const BrainView: React.FC = () => {
                     <Sparkles size={14} />
                     {t.dissolve}
                   </button>
-                ) : (
-                  <div className="w-full flex items-center justify-center gap-2 bg-white/5 text-gray-500 py-2.5 rounded-xl text-sm cursor-not-allowed">
-                    <Sparkles size={14} />
-                    {language === 'zh' ? '梦魇无法消解' : 'Nightmares cannot be dissolved'}
-                  </div>
                 )}
               </div>
             ) : (
