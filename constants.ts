@@ -67,6 +67,15 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     keepBoth: 'Keep Both',
     viewFamily: 'View Family',
     backToArchive: 'Back to Archive',
+    // Login
+    login: 'Log In',
+    logout: 'Log Out',
+    username: 'Username',
+    avatar: 'Avatar',
+    avatarOptional: 'Avatar (optional)',
+    enterUsername: 'Enter your username',
+    loggedInAs: 'Logged in as',
+    devModeEnabled: 'Dev Mode Enabled',
   },
   zh: {
     brain: '大脑',
@@ -119,6 +128,15 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     keepBoth: '保留两者',
     viewFamily: '查看家族',
     backToArchive: '返回收藏',
+    // Login
+    login: '登录',
+    logout: '退出登录',
+    username: '用户名',
+    avatar: '头像',
+    avatarOptional: '头像（可选）',
+    enterUsername: '输入用户名',
+    loggedInAs: '已登录为',
+    devModeEnabled: '开发者模式已启用',
   }
 };
 

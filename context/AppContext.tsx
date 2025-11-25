@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, PropsWithChildren, useCallback } from 'react';
-import { Creature, Language, Tab, ForumPost, Family, VisualParams } from '../types';
+import { Creature, Language, Tab, ForumPost, Family, VisualParams, UserProfile } from '../types';
 import { MOCK_FORUM_POSTS } from '../constants';
 
 // Creature dissolve time: 24 hours in milliseconds
@@ -77,6 +77,11 @@ interface AppContextType {
   confirmArchiveReplace: () => void;
   confirmArchiveKeepBoth: () => void;
   cancelPendingArchive: () => void;
+  // User login
+  user: UserProfile | null;
+  isDevMode: boolean;
+  login: (username: string, avatar?: string) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -93,6 +98,9 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
   const [mergeFamily, setMergeFamily] = useState<boolean>(true);
   const [families, setFamilies] = useState<Family[]>([]);
   const [pendingArchive, setPendingArchive] = useState<PendingArchive | null>(null);
+  // User login state
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const isDevMode = user?.username === 'dev91';
 
   // Load from local storage on mount (mock persistence)
   useEffect(() => {
@@ -136,6 +144,15 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     const storedMergeFamily = localStorage.getItem('dozzi_merge_family');
     if (storedMergeFamily !== null) {
       setMergeFamily(storedMergeFamily === 'true');
+    }
+    
+    const storedUser = localStorage.getItem('dozzi_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse stored user");
+      }
     }
   }, []);
 
@@ -486,6 +503,19 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     });
   }, []);
 
+  // Login function - toy login only requires username
+  const login = useCallback((username: string, avatar?: string) => {
+    const newUser: UserProfile = { username, avatar };
+    setUser(newUser);
+    localStorage.setItem('dozzi_user', JSON.stringify(newUser));
+  }, []);
+
+  // Logout function
+  const logout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem('dozzi_user');
+  }, []);
+
   return (
     <AppContext.Provider value={{ 
       creatures, 
@@ -519,6 +549,11 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       confirmArchiveReplace,
       confirmArchiveKeepBoth,
       cancelPendingArchive,
+      // User login
+      user,
+      isDevMode,
+      login,
+      logout,
     }}>
       {children}
     </AppContext.Provider>

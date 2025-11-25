@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Creature } from '../types';
 
 const ForumView: React.FC = () => {
-  const { language, forumPosts, toggleReaction, creatures, addForumPost } = useApp();
+  const { language, forumPosts, toggleReaction, creatures, addForumPost, user } = useApp();
   const t = TEXTS[language];
 
   // New Post State
@@ -22,9 +22,12 @@ const ForumView: React.FC = () => {
   const handlePost = () => {
     if (!selectedCreature) return;
 
+    // Use logged-in user's info or default to 'You'
+    const authorName = user?.username || 'You';
+
     addForumPost({
       id: Math.random().toString(36).substr(2, 9),
-      author: 'You',
+      author: authorName,
       creature: selectedCreature,
       caption: caption,
       likes: 0,

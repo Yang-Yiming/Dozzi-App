@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { generateVisualParams } from '../utils/slimeUtils';
 
 const FocusView: React.FC = () => {
-  const { addCreature, language, setActiveTab } = useApp();
+  const { addCreature, language, setActiveTab, isDevMode } = useApp();
   const t = TEXTS[language];
 
   const [isFocusing, setIsFocusing] = useState(false);
@@ -179,13 +179,15 @@ const FocusView: React.FC = () => {
       {!isFocusing ? (
         <div className="flex flex-col items-center space-y-6 z-10 w-full max-w-xs relative">
           
-          {/* Dev Button */}
-          <button 
-            onClick={() => startFocus(5/60)}
-            className="absolute -top-8 right-4 text-[10px] text-white/20 hover:text-white/50 border border-white/10 px-2 py-1 rounded transition-colors"
-          >
-            Dev: 5s
-          </button>
+          {/* Dev Button - Only visible in dev mode */}
+          {isDevMode && (
+            <button 
+              onClick={() => startFocus(5/60)}
+              className="absolute -top-8 right-4 text-[10px] text-white/20 hover:text-white/50 border border-white/10 px-2 py-1 rounded transition-colors"
+            >
+              Dev: 5s
+            </button>
+          )}
 
           <div className="w-full px-4">
             <label className="block text-center text-gray-400 text-sm mb-2">{t.minutes}: {Math.floor(durationMinutes)}</label>

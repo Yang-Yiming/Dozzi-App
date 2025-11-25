@@ -79,6 +79,12 @@ export interface ForumComment {
   text: string;
 }
 
+// User profile for toy login
+export interface UserProfile {
+  username: string;
+  avatar?: string; // URL or emoji
+}
+
 export interface Translations {
   brain: string;
   focus: string;
@@ -130,4 +136,13 @@ export interface Translations {
   keepBoth: string;
   viewFamily: string;
   backToArchive: string;
+  // Login
+  login: string;
+  logout: string;
+  username: string;
+  avatar: string;
+  avatarOptional: string;
+  enterUsername: string;
+  loggedInAs: string;
+  devModeEnabled: string;
 }

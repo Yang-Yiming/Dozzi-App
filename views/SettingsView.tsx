@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TEXTS } from '../constants';
-import { Globe, Moon, Sliders, Users, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Globe, Moon, Sliders, Users, ToggleLeft, ToggleRight, LogIn, LogOut, User, Code } from 'lucide-react';
 
 const SettingsView: React.FC = () => {
   const { 
@@ -14,12 +14,138 @@ const SettingsView: React.FC = () => {
     setFamilyThreshold,
     mergeFamily,
     setMergeFamily,
+    user,
+    isDevMode,
+    login,
+    logout,
   } = useApp();
   const t = TEXTS[language];
 
+  // Login form state
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [avatarInput, setAvatarInput] = useState('');
+
+  const handleLogin = () => {
+    if (usernameInput.trim()) {
+      login(usernameInput.trim(), avatarInput.trim() || undefined);
+      setShowLoginForm(false);
+      setUsernameInput('');
+      setAvatarInput('');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
-    <div className="h-full bg-night-900 p-6">
+    <div className="h-full bg-night-900 p-6 overflow-y-auto">
       <h1 className="text-2xl font-bold text-white mb-8">{t.settings}</h1>
+
+      {/* User Login Section */}
+      <div className="bg-night-800 rounded-xl p-4 border border-white/5 mb-6">
+        {user ? (
+          // Logged in state
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                {user.avatar ? (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-dream-100 to-dream-300 flex items-center justify-center text-xl">
+                    {user.avatar}
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+                    {user.username[0].toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm text-gray-400">{t.loggedInAs}</div>
+                  <div className="text-white font-medium">{user.username}</div>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+              >
+                <LogOut size={18} />
+                <span>{t.logout}</span>
+              </button>
+            </div>
+            
+            {/* Dev Mode Indicator */}
+            {isDevMode && (
+              <div className="flex items-center space-x-2 px-3 py-2 bg-green-500/20 rounded-lg border border-green-500/30">
+                <Code size={18} className="text-green-400" />
+                <span className="text-green-400 text-sm font-medium">{t.devModeEnabled}</span>
+              </div>
+            )}
+          </div>
+        ) : showLoginForm ? (
+          // Login form
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 text-gray-300 mb-4">
+              <User size={20} />
+              <span className="font-medium">{t.login}</span>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">{t.username}</label>
+                <input
+                  type="text"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  placeholder={t.enterUsername}
+                  className="w-full bg-night-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-dream-200"
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                />
+              </div>
+              
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">{t.avatarOptional}</label>
+                <input
+                  type="text"
+                  value={avatarInput}
+                  onChange={(e) => setAvatarInput(e.target.value)}
+                  placeholder="🐱 or URL"
+                  className="w-full bg-night-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-dream-200"
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLoginForm(false)}
+                className="flex-1 py-2 rounded-lg text-gray-400 hover:bg-white/5 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={handleLogin}
+                disabled={!usernameInput.trim()}
+                className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                  usernameInput.trim()
+                    ? 'bg-dream-200 text-night-900 hover:bg-white'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {t.login}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Not logged in - show login button
+          <button
+            onClick={() => setShowLoginForm(true)}
+            className="w-full flex items-center justify-center space-x-2 py-3 bg-dream-200/20 hover:bg-dream-200/30 text-dream-200 rounded-lg transition-colors"
+          >
+            <LogIn size={20} />
+            <span className="font-medium">{t.login}</span>
+          </button>
+        )}
+      </div>
 
       <div className="bg-night-800 rounded-xl p-4 border border-white/5 space-y-6">
         
