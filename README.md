@@ -15,4 +15,4 @@ A action for building APK would be triggered if
 - When the push contains tag [v*]
    - e.g. `git tag v1.0.0 && git push`
 
-Current Version: v0.0.2
+Current Version: v0.1.0
