@@ -1,4 +1,3 @@
-
 export type Tab = 'brain' | 'focus' | 'forum' | 'archive' | 'settings';
 
 export type Language = 'en' | 'zh';
@@ -98,6 +97,10 @@ export interface Translations {
   creatureBorn: string;
   nightmareBorn: string;
   share: string;
+  antiSlackingMode: string;
+  antiSlackingDesc: string;
+  zenMode: string;
+  zenModeDesc: string;
   language: string;
   selectLanguage: string;
   minutes: string;

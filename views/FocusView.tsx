@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { TEXTS, COLORS, EMOJIS, NIGHTMARE_EMOJIS } from '../constants';
@@ -8,7 +7,7 @@ import { motion } from 'framer-motion';
 import { generateVisualParams } from '../utils/slimeUtils';
 
 const FocusView: React.FC = () => {
-  const { addCreature, language, setActiveTab, isDevMode } = useApp();
+  const { addCreature, language, setActiveTab, isDevMode, antiSlackingMode } = useApp();
   const t = TEXTS[language];
 
   const [isFocusing, setIsFocusing] = useState(false);
@@ -19,10 +18,17 @@ const FocusView: React.FC = () => {
   // We keep creatureColor for the pulse effect, but the actual creature uses visualParams
   const [creatureColor, setCreatureColor] = useState(COLORS[0]);
   const [showResult, setShowResult] = useState<'success' | 'fail' | null>(null);
+  
+  // Zen Mode State
+  const [zenModePosition, setZenModePosition] = useState({ x: 50, y: 50 });
+  const [zenModeOffset, setZenModeOffset] = useState({ x: 0, y: 0 });
 
   const intervalRef = useRef<number | null>(null);
   const hasEndedRef = useRef(false); // Prevent double-ending
   const endTimeRef = useRef<number>(0);
+  
+  // Keep latest endFocus in ref for event listeners
+  const endFocusRef = useRef<(success: boolean) => void>(() => {});
 
   // Helper to format time
   const formatTime = (seconds: number) => {
@@ -88,6 +94,65 @@ const FocusView: React.FC = () => {
     addCreature(newCreature);
   };
 
+  // Update ref for event listeners
+  endFocusRef.current = endFocus;
+
+  // Anti-Slacking Mode Logic (Wake Lock + Visibility)
+  useEffect(() => {
+    if (!isFocusing || !antiSlackingMode) return;
+
+    let wakeLock: any = null;
+
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          // @ts-ignore - navigator.wakeLock might not be in TS definition yet
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.error('Wake Lock failed:', err);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Strict mode: Backgrounding fails the session
+        endFocusRef.current(false);
+      } else {
+        // Re-acquire wake lock if we come back
+        requestWakeLock();
+      }
+    };
+
+    requestWakeLock();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      if (wakeLock) wakeLock.release();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isFocusing, antiSlackingMode]);
+
+  // Burn-in protection for Zen Mode
+  useEffect(() => {
+    if (!isFocusing || !antiSlackingMode) return;
+    
+    const moveInterval = setInterval(() => {
+      // Move slightly around center (40-60%)
+      setZenModePosition({
+        x: 40 + Math.random() * 20,
+        y: 40 + Math.random() * 20
+      });
+      // Move bottom controls slightly (+/- 20px)
+      setZenModeOffset({
+        x: (Math.random() - 0.5) * 40,
+        y: (Math.random() - 0.5) * 40
+      });
+    }, 60000); // Move every minute
+
+    return () => clearInterval(moveInterval);
+  }, [isFocusing, antiSlackingMode]);
+
   // Timer Logic
   useEffect(() => {
     if (isFocusing) {
@@ -141,6 +206,49 @@ const FocusView: React.FC = () => {
         >
           View in Brain
         </button>
+      </div>
+    );
+  }
+
+  // Zen Mode UI (Anti-Slacking Mode)
+  if (isFocusing && antiSlackingMode) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden">
+        <div 
+          className="absolute text-center transition-all duration-1000"
+          style={{ 
+            left: `${zenModePosition.x}%`, 
+            top: `${zenModePosition.y}%`,
+            transform: 'translate(-50%, -50%)'
+          }}
+        >
+          <div className="text-gray-800 text-6xl font-mono font-bold opacity-40 select-none">
+            {formatTime(timeLeft)}
+          </div>
+          <div className="text-gray-900 text-sm mt-4 opacity-30 select-none">
+            {t.zenMode}
+          </div>
+        </div>
+        
+        {/* Give Up Button */}
+        <div 
+          className="absolute bottom-20 left-0 right-0 flex justify-center transition-all duration-1000"
+          style={{ transform: `translate(${zenModeOffset.x}px, ${zenModeOffset.y}px)` }}
+        >
+          <button
+            onClick={giveUp}
+            className="px-6 py-3 border border-white/10 text-white/20 rounded-full text-sm hover:bg-white/5 hover:text-white/40 transition-colors"
+          >
+            {t.giveUp}
+          </button>
+        </div>
+        
+        <div 
+          className="absolute bottom-8 text-center w-full text-[10px] text-gray-900 select-none transition-all duration-1000"
+          style={{ transform: `translate(${zenModeOffset.x}px, ${zenModeOffset.y}px)` }}
+        >
+          {t.antiSlackingDesc}
+        </div>
       </div>
     );
   }

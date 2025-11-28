@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TEXTS } from '../constants';
-import { Globe, Moon, Sliders, Users, ToggleLeft, ToggleRight, LogIn, LogOut, User, Code } from 'lucide-react';
+import { Globe, Moon, Sliders, Users, ToggleLeft, ToggleRight, LogIn, LogOut, User, Code, ShieldAlert } from 'lucide-react';
 
 const SettingsView: React.FC = () => {
   const { 
@@ -14,6 +13,8 @@ const SettingsView: React.FC = () => {
     setFamilyThreshold,
     mergeFamily,
     setMergeFamily,
+    antiSlackingMode,
+    setAntiSlackingMode,
     user,
     isDevMode,
     login,
@@ -147,7 +148,7 @@ const SettingsView: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-night-800 rounded-xl p-4 border border-white/5 space-y-6">
+      <div className="bg-night-800 rounded-xl p-4 border border-white/5 space-y-6 mb-6">
         
         {/* Language Selector */}
         <div className="flex items-center justify-between">
@@ -254,6 +255,29 @@ const SettingsView: React.FC = () => {
           </button>
         </div>
 
+      </div>
+
+      {/* Focus Settings */}
+      <div className="bg-night-800 rounded-xl p-4 border border-white/5 mb-6">
+        <div className="flex items-center space-x-3 text-gray-300 mb-4">
+          <ShieldAlert size={20} />
+          <span className="font-medium">{t.focus}</span>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 pr-4">
+              <div className="text-white font-medium mb-1">{t.antiSlackingMode}</div>
+              <div className="text-xs text-gray-400">{t.antiSlackingDesc}</div>
+            </div>
+            <button 
+              onClick={() => setAntiSlackingMode(!antiSlackingMode)}
+              className={`transition-colors ${antiSlackingMode ? 'text-dream-300' : 'text-gray-600'}`}
+            >
+              {antiSlackingMode ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="mt-12 text-center text-gray-600 text-xs">

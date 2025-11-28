@@ -82,6 +82,9 @@ interface AppContextType {
   isDevMode: boolean;
   login: (username: string, avatar?: string) => void;
   logout: () => void;
+  // Focus settings
+  antiSlackingMode: boolean;
+  setAntiSlackingMode: (enabled: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -96,6 +99,8 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
   // Family settings
   const [familyThreshold, setFamilyThreshold] = useState<number>(0.5);
   const [mergeFamily, setMergeFamily] = useState<boolean>(true);
+  // Focus settings
+  const [antiSlackingMode, setAntiSlackingMode] = useState<boolean>(false);
   const [families, setFamilies] = useState<Family[]>([]);
   const [pendingArchive, setPendingArchive] = useState<PendingArchive | null>(null);
   // User login state
@@ -512,48 +517,48 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     localStorage.removeItem('dozzi_user');
   }, []);
 
-  return (
-    <AppContext.Provider value={{ 
-      creatures, 
-      addCreature, 
-      updateCreatures,
-      activeTab, 
-      setActiveTab, 
-      language, 
-      setLanguage,
-      creatureScale,
-      setCreatureScale: handleSetCreatureScale,
-      forumPosts,
-      addForumPost,
-      toggleReaction,
-      archivedCreatures,
-      archiveCreature,
-      removeFromArchive,
-      isCreatureArchived,
-      dissolveCreature,
-      getTimeUntilDissolve,
-      transformNightmare,
-      // Family functionality
-      familyThreshold,
-      setFamilyThreshold: handleSetFamilyThreshold,
-      mergeFamily,
-      setMergeFamily: handleSetMergeFamily,
-      families,
-      getFamilyByCreatureId,
-      getFamilyMembers,
-      pendingArchive,
-      confirmArchiveReplace,
-      confirmArchiveKeepBoth,
-      cancelPendingArchive,
-      // User login
-      user,
-      isDevMode,
-      login,
-      logout,
-    }}>
-      {children}
-    </AppContext.Provider>
-  );
+  const value = {
+    creatures, 
+    addCreature, 
+    updateCreatures,
+    activeTab, 
+    setActiveTab, 
+    language, 
+    setLanguage,
+    creatureScale,
+    setCreatureScale: handleSetCreatureScale,
+    forumPosts,
+    addForumPost,
+    toggleReaction,
+    archivedCreatures,
+    archiveCreature,
+    removeFromArchive,
+    isCreatureArchived,
+    dissolveCreature,
+    getTimeUntilDissolve,
+    transformNightmare,
+    // Family functionality
+    familyThreshold,
+    setFamilyThreshold: handleSetFamilyThreshold,
+    mergeFamily,
+    setMergeFamily: handleSetMergeFamily,
+    families,
+    getFamilyByCreatureId,
+    getFamilyMembers,
+    pendingArchive,
+    confirmArchiveReplace,
+    confirmArchiveKeepBoth,
+    cancelPendingArchive,
+    // User login
+    user,
+    isDevMode,
+    login,
+    logout,
+    antiSlackingMode,
+    setAntiSlackingMode,
+  };
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export const useApp = () => {

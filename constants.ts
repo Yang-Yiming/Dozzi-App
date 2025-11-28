@@ -1,4 +1,3 @@
-
 import { Translations, Creature } from './types';
 
 export const EMOJIS = ['✨', '🌙', '⭐', '🌊', '🌸', '🍬', '🎹', '🚀', '🎨', '🧸', '🔮', '🎵', '🐱', '🦋', '🌈', '🍦', '💎', '🎈'];
@@ -29,6 +28,10 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     creatureBorn: 'A new Dream Creature is born!',
     nightmareBorn: 'A Nightmare has appeared...',
     share: 'Share to Forum',
+    antiSlackingMode: 'Anti-Slacking Mode',
+    antiSlackingDesc: 'Strict mode. Screen stays on. Leaving the app or turning off screen causes failure. Uses more battery.',
+    zenMode: 'Zen Mode',
+    zenModeDesc: 'Screen is dimmed to save battery.',
     language: 'Language',
     selectLanguage: 'Select Language',
     minutes: 'minutes',
@@ -88,8 +91,12 @@ export const TEXTS: Record<'en' | 'zh', Translations> = {
     focusing: '专注中...',
     timeRemaining: '剩余时间',
     creatureBorn: '一个新的梦境生物诞生了！',
-    nightmareBorn: '一个噩梦出现了...',
+    nightmareBorn: '噩梦降临了...',
     share: '分享到广场',
+    antiSlackingMode: '防摸鱼模式',
+    antiSlackingDesc: '严格模式。屏幕常亮。切后台或熄屏将导致失败。会增加耗电。',
+    zenMode: '禅模式',
+    zenModeDesc: '屏幕变暗以节省电量。',
     language: '语言',
     selectLanguage: '选择语言',
     minutes: '分钟',
