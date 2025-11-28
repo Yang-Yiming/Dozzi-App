@@ -22,6 +22,7 @@ const FocusView: React.FC = () => {
 
   const intervalRef = useRef<number | null>(null);
   const hasEndedRef = useRef(false); // Prevent double-ending
+  const endTimeRef = useRef<number>(0);
 
   // Helper to format time
   const formatTime = (seconds: number) => {
@@ -36,8 +37,13 @@ const FocusView: React.FC = () => {
     if (minsOverride) setDurationMinutes(minsOverride);
     
     hasEndedRef.current = false; // Reset the guard
+    
+    // Calculate end time
+    const durationSec = Math.floor(mins * 60);
+    endTimeRef.current = Date.now() + durationSec * 1000;
+
     setIsFocusing(true);
-    setTimeLeft(Math.floor(mins * 60));
+    setTimeLeft(durationSec);
     setCollectedEmojis([]);
     setCreatureSize(0.2);
     setCreatureColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
@@ -86,13 +92,16 @@ const FocusView: React.FC = () => {
   useEffect(() => {
     if (isFocusing) {
       intervalRef.current = window.setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            endFocus(true);
-            return 0;
-          }
-          return prev - 1;
-        });
+        const now = Date.now();
+        const remaining = Math.ceil((endTimeRef.current - now) / 1000);
+
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          endFocus(true);
+          return;
+        }
+
+        setTimeLeft(remaining);
 
         // Slowly grow creature
         setCreatureSize((prev) => Math.min(prev + 0.0005, 2.0));
